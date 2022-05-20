@@ -33,6 +33,14 @@ Para usar autoservice podemos hacer un micro llamamiento desde sshwall o directa
 ![ParrotPentesting-2022-05-21-00-46-55](https://user-images.githubusercontent.com/92258683/169621666-97d9ffd3-cd1f-4709-bb98-7809e86c07e4.png)
 
 
+![ParrotPentesting-2022-05-21-00-48-11](https://user-images.githubusercontent.com/92258683/169621773-2a44573b-6ec3-4018-acf8-5a9d18d7c83c.png)
+
+
+![ParrotPentesting-2022-05-21-00-49-20](https://user-images.githubusercontent.com/92258683/169621850-b57e8cc8-dff4-4775-ad01-9bd247e88d72.png)
+
+
+
+
 
 
 
