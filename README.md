@@ -42,6 +42,12 @@ Para usar autoservice podemos hacer un micro llamamiento desde sshwall o directa
 
 
 
+## Bugs:
+
+Si hay algún reporte o algún tipo de implementación que queráis hacer: Juanmacoello94@gmail.com
+
+También podemos hacer PULLS REQUESTS e ISSUES aquí.
+
 
 
 
