@@ -1,0 +1,247 @@
+#!/bin/bash
+#
+####################
+#   ShadowVMX	   #
+#  Limitación SSH  #
+#   FireWall	   #
+####################
+#
+#Vamos a poder bloquear las IPs que queramos y, podremos configurar como queramos nuestro SSH.
+#
+
+trap closeitall SIGINT
+
+
+function closeitall(){
+	echo " "
+	echo "$(tput setaf 1)[!!!!]$(tput setaf 3)ctrl_c detectado ... "
+	echo " "
+	echo "$(tput setaf 6)[$(tput setaf 1)+$(tput setaf 6)]Saliendo."
+	echo " "
+	sleep 2
+	exit 1
+}
+
+
+echo "$(tput setaf 1)"
+figlet SSH-X-WALL
+echo "$(tput setaf 6)                                @ShadowVMX v1.0"
+echo "_______________________________________________"
+echo " "
+if [[ -z $1 ]] ; then
+	echo " "
+	echo "$(tput setaf 1)ssh-X-wall v1.0 $(tput setaf 6)-- $(tput setaf 3)[OPTIONS]"
+	echo "$(tput setaf 6)____________________________"
+	echo "$(tput setaf 3) "
+	echo "$(tput setaf 6)--init $(tput setaf 3)[Iniciará el firewall sin ninguna regla [Estará todo capado]."
+	echo " "
+	echo "$(tput setaf 6)--limone + <ip> $(tput setaf 3)[Habilita la IP para su dispositivo, el resto tendrá bloqueado el acceso ssh.]"
+	echo " "
+	echo "$(tput setaf 6)--limall + <id.red(192.168.0.0/24)> $(tput setaf 3)[Permite que TODO el rango de IP se conecte al dispositivo]."
+	echo " "
+	echo "$(tput setaf 6)--delrules $(tput setaf 3)[Eliminará todas las reglas impuestas pero, el firewall seguirá activo.]"
+	echo " "
+	echo "$(tput setaf 6)--firelock $(tput setaf 3)[Quitará el firewall sin necesidad de eliminar reglas.]"
+	echo " "
+	echo "$(tput setaf 6)--sshrules $(tput setaf 3)[Te permitirá implantar ciertas reglas al SSH.]"
+	echo " "
+	echo "$(tput setaf 6)--none $(tput setaf 3)[No habrá posibilidad de entrar.]"
+	echo " "
+	echo "$(tput setaf 6)--check $(tput setaf 3)[Mirar si hay alguna regla activa y, en caso positivo, poder eliminarla (si quieres).]"
+	echo " "
+	echo "$(tput setaf 6)--autoservice $(tput setaf 3)[Usará la herramienta autoservice por si quieres verificar intrusión ssh en el sistema.]"
+	echo " "
+	echo "$(tput setaf 6)--GPLv3 $(tput setaf 3)[Visualizar licencia GPLv3.]"
+	echo " "
+	exit
+fi
+
+ipx=`hostname -I`
+
+if [[ $1 == "--limone" ]] ; then
+	echo " "
+	read -p "[!]¡USUARIO!, de forma predeterminada, este script activará el firewall, puede quitarlo con --firelock, si está de acuerdo, pulse [ENTER], en caso contrario, ctrl_c: " fireup
+	echo " "
+	service ufw start
+	ufw enable &> /dev/null	
+	sleep 1
+	echo "[!]$(tput setaf 3)Firewall$(tput setaf 3) is NOW $(tput setaf 2)UP."
+	echo " "
+
+	echo " "
+	echo "[!]Vamos a habilitar la IP --> $2 ...."
+	echo " "
+	sleep 1.5
+	echo "$(tput setaf 3)" && ufw allow from $2 to any port 22
+	echo " "
+	sleep 1
+	echo "$(tput setaf 2)[!]Abra el CMD de Windows y escriba ssh root@$ipx, así podrá ver si el desbloqueo que ha realizado ha sido exitoso."
+	echo " "
+	echo "$(tput setaf 3)[+]$(tput setaf 6)Gracias por usar SSHWALL."
+	echo " "
+	exit
+fi
+
+if [[ $1 == "--limall" ]] ; then
+	echo " "
+	read -p "[!]¡USUARIO!, de forma predeterminada, este script activará el firewall, puede quitarlo con --firelock, si está de acuerdo, pulse [ENTER], en caso contrario, ctrl_c: " fireup
+	echo " "
+	service ufw start
+	ufw enable &> /dev/null
+	sleep 1
+	echo "[!]$(tput setaf 3)Firewall$(tput setaf 3) is NOW $(tput setaf 2)UP."
+	echo " "
+
+	echo " "
+	echo "[!]Habilitando SSH para TODOS en $2 [CUIDADO]"
+	echo " "
+	echo "$(tput setaf 3)" && ufw allow from $2 to any port 22
+	sleep 1
+	echo " "
+	echo "[+]Realizado con ÉXITO"
+	echo " "
+	exit
+fi
+
+
+if [[ $1 == "--delrules" ]] ; then
+	echo " "
+	echo "[!]Eliminando $(tput setaf 1)TODAS $(tput setaf 3) las reglas del FireWall."
+	echo " "
+	echo "[+]Pulse [y] cuando se le pida: "
+	echo " "
+	ufw reset
+	sleep 1
+	ufw enable &> /dev/null
+	echo " "
+	echo "[!]Realizado con éxito."
+	echo " "
+	sleep 1
+        exit
+fi
+
+
+if [[ $1 == "--firelock" ]] ; then
+	echo " "
+	echo "[!]Desactivando firewall y servicios del mismo ..."
+	sleep 1
+	ufw disable &> /dev/null
+	service ufw stop 
+	sleep 1
+	echo "[!!]Realizado con éxito (Cuidado)."
+	echo " "
+	sleep 1
+        exit
+fi
+
+
+if [[ $1 == "--none" ]] ; then
+	service ssh stop
+	echo "[!!!]Bloqueando el acceso completo para... TODOS, para ello, borraremos todas las reglas posibles."
+	echo "" 
+	read -p "Si está seguro, pulse [ENTER], en caso contrario ctrl_c" a1
+	echo "" 
+	echo "[3]"
+	sleep 1
+	echo "[2]"
+	sleep 1
+	echo "[1]"
+	ufw reset 
+	service ufw restart
+	ufw enable
+	echo " "
+	echo "[-]Servicio SSH $(tput setaf 1)[DOWN]."
+        echo " "
+	exit
+fi
+
+
+if [[ $1 == "--sshrules" ]] ; then
+        echo " "
+	read -p "¿Cuántos tiempo (minutos) para que el ssh corte conexión mientras el usuario está afk? --> " minutt
+	echo " "
+	read -p "¿Cuántos intentos de login hasta romper conexión? (ej.2) --> " logxin
+	echo " "
+	read -p "¿Cuántas sesiones abiertas al mismo tiempo? (ej.1) --> " sessions
+	echo " "
+	echo "$(tput setaf 1)[!]$(tput setaf 6)Reporte final: "
+	echo "$(tput setaf 3) "
+	echo "LoginGraceTime $minutt"
+	sleep 1.5
+	echo "MaxAuthTries $logxin"
+	sleep 1.5
+	echo "MaxSessions $sessions"
+	sleep 1.5
+	echo " "
+	echo "$(tput setaf 1)[!!!!]$(tput setaf 6)Esto debes de ponerlo en /etc/ssh/sshd_config"
+	echo " "
+	echo "$(tput setaf 1)Busca los parámetros y descomenta!"
+        echo " "
+	exit
+fi
+
+
+
+if [[ $1 == "--init" ]] ; then
+        echo " "
+	echo "[*]Iniciando $(tput setaf 1)Firewall$(tput setaf 3)"
+	echo " "
+	service ufw start
+	ufw enable &> /dev/null
+	echo "[!]Completado $(tput setaf 1)* * * "
+	echo " "
+        exit
+fi
+
+
+if [[ $1 == "--check" ]] ; then
+        echo " "
+        echo "[*]Reglas activas: "
+	sleep 1
+	echo "$(tput setaf 1)"
+	ufw status
+	sleep 2
+	read -p "$(tput setaf 3)Si desea borrar alguna, pulse el número (si es la 2º pues el 2), en caso negativo... ctrl_c --> " ruless
+	ufw delete $ruless
+	sleep 2
+	echo " "
+	echo "[!!!]Eliminada ... "
+	echo " "
+	ufw status
+	echo " "
+	echo "[*]Saliendo .. "
+	echo " "
+        exit
+fi
+
+
+if [[ $1 == "--autoservice" ]] ; then
+        autoservice -h
+	echo " "
+	echo "$(tput setaf 1)[*]$(tput setaf 3)Para usar la herramienta escriba directamente en el sistema (autoservice), ya la tiene instalada."
+	echo " "
+	exit
+fi
+
+
+if [[ $1 == "--GPLv3" ]] ; then
+echo "$(tput setaf 3)"
+echo "Copyright (C) 2022  ShadowVMX"
+echo "$(tput setaf 1) "
+echo "This program is free software: you can redistribute it and/or modify"
+echo "it under the terms of the GNU General Public License as published by"
+echo "the Free Software Foundation, either version 3 of the License, or"
+echo "(at your option) any later version."
+echo ""
+echo "This program is distributed in the hope that it will be useful,"
+echo "but WITHOUT ANY WARRANTY; without even the implied warranty of"
+echo "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the"
+echo "GNU General Public License for more details."
+echo ""
+echo "You should have received a copy of the GNU General Public License"
+echo "along with this program.  If not, see <http://www.gnu.org/licenses/>"
+echo ""
+echo "$(tput setaf 6)_____________________________________________________________________"
+sleep 2
+echo " "
+fi
