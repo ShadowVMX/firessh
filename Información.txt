@@ -1,0 +1,12 @@
+Debe saber que va a usar un firewall, por lo que ha de tener unos mínimos conceptos.
+Claramente, esta herramienta simplifica todo el proceso para que pueda controlar la intrusión a través del SSH.
+
+A parte, debe de saber que, se le proporciona otra herramienta (autoservice) MUY útil.
+Esta herramienta fue diseñada para los administradores de red (No vale solo para el SSH), esta eliminará cualquier servicio que creamos un poco... Extraño.
+
+Para que usted esté seguro de sshwall debe de usar otra máquina en su misma red y ver qué tal funciona.
+Claramente, he probado todo esto en PRIVATE IP no en PUBLIC.
+
+Para ello trataríamos de usar otras reglas pero, a la hora de controlar un acceso interno, la cosa se pone bastante interesante.
+
+Por último, también debe de entender de configuraciones SSH para Linux a través de los parámetros de configuración de sshd_config.
