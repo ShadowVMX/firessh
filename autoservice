@@ -1,0 +1,222 @@
+#!/bin/bash
+#Herramienta usada para automatizar servicios y/o procesos.
+
+
+#Copyright (C) 2022  ShadowVMX
+
+#This program is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+
+# -------------------------------
+#|   Desarrollada por  Juanma	|
+#|   Coello (aka) ShadowVMX	|
+#|				|
+#--------------------------------
+
+
+#Úsala para /home/user y para root, se pueden iniciar servicios en diferentes niveles.
+
+### Verificaremos puertos específicos o aplicaciones específicas.
+
+### Est@s podrán ser 'eliminadas' de forma automatizada si el usuario lo desea en el mismo script con parámetros.
+
+#Nos permitirá verificar ciertos servicios específicamente según PID, nombre del servicio, etc.
+
+#Podremos verificar los servicios en segundo plano a nivel de sistema y a nivel de terminal.
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+
+#trap finish SIGINT -> Lo usaré para los procesos de función.
+
+
+function Lsof() {
+		trap endfinish EXIT 
+		echo " "
+		echo "Escaneando los servicios activos más importantes (por ejemplo, ssh.)"
+		echo " "
+		echo "Cuando desee, puede parar con ctrl+c, así podremos buscar información o simplemente acabar."
+		echo " "
+		echo "$(tput setaf 2)[+]RECUERDE: Este es un proceso lento, dale, al menos, 1 minuto para analizar TCP y UDP."
+		echo " "
+		echo "[+]GRACIAS POR SU PACIENCIA."
+		echo "$(tput setaf 7)"
+		i=1
+		echo " "
+		while [[ $i -le 65535 ]]
+		do
+		lsof -i:$i > /dev/null && echo "$(tput setaf 1)[*] Servicio activo -> $i"
+		i=$(( $i + 1 ))
+		done
+		echo " "
+}
+
+function endfinish(){
+		echo " "
+		read -p "$(tput setaf 7)¿Desea solicitar información sobre algún servicio específico?(Y/N): " infoP
+		echo " "
+		if [[ $infoP = "Y" ]] || [[ $infoP = "y" ]] ; then
+		read -p "Solicite el número de servicio que le ocasiona problemas --> " PService
+		firefox https://es.adminsub.net/tcp-udp-port-finder/$PService 2> /dev/null
+		echo " "
+		sleep 2
+		echo "En caso de no aparecer nada, recuerda que no podemos abrir URL's con root, te dejamos el enlace para que busques la información específica."
+		echo " "
+		echo "https://es.adminsub.net/tcp-udp-port-finder/"
+		echo " "
+		else
+		echo "Saliendo."
+		fi
+}
+
+
+function Crons(){
+		echo " "
+		echo "Verificando crontabs en segundo plano."
+		echo " "
+		echo "Crontabs: "
+		echo " "
+		crontab -l
+		echo " "
+		sleep 2
+		echo "Si no apareció nada, es que está vacío para el usuario actual."
+		echo " "
+		echo "Aún así, vamos a verificar..."
+		echo " "
+		echo "Trata de bajar hasta abajo del todo del documento, en caso de que haya líneas SIN COMENTAR escritas y no has sido tú, elimínalas y securiza el sistema, tienes un intruso."
+		echo " "
+		echo "Al cerrar el archivo, habremos acabado."
+		echo " "
+		sleep 10
+		echo "$(tput setaf 1)[*]Abriendo ..."
+		sleep 2
+		crontab -e
+}
+
+
+
+function KillCrons() {
+		echo " "
+		echo "Vamos a borrar los crons del sistema para este usuario."
+		echo " "
+		sleep 2
+		crontab -r
+		echo " "
+		echo "Realizado con éxito."
+}
+
+
+
+function SService() {
+		echo " "
+		read -p "[*]¿Qué proceso anda buscando? --> " SProceso 
+		echo " "
+		echo "Si ve -grep, realmente es el shell actual, no el proceso específico, por lo que no tendrá ningún proceso existente filtrado."
+		echo " "
+		ps aux | grep "$SProceso"
+		echo " "
+		sleep 2
+		read -p "[*]¿Matar proceso? (Y/N): " KProceso
+		if [[ $KProceso = "Y" ]] || [[ $KProceso = "y" ]] ; then
+		echo " "
+		echo "Ejecutando ..."
+		sleep 1
+		pkill $SProceso
+		echo " "
+		echo "Acabado con éxito."
+		echo " "
+		echo "Mostrando de nuevo el proceso para verificar su [kill]"
+		echo " "
+		ps aux | grep "$SProceso"
+		echo " "
+		echo "Si sigue viendo el agente activo, quiere decir que has de apagarlo manualmente."
+		echo " "
+		read -p "¿Continuar? (Y/N) --> " setitoff
+		if [[ $setitoff = "Y" ]] || [[ $setitoff = "y" ]] ; then
+		service $SProceso stop
+		echo " "
+		echo "Llevado a cabo con éxito."
+		echo " "
+		service $SProceso status
+		echo " "
+		fi
+		else
+		echo " "
+		echo "[*]Saliendo ..."
+		echo " "
+		fi  
+}
+
+
+
+
+
+
+
+if [[ -z $1 ]] && [[ -z $2 ]] ; then
+echo " "
+echo "[*] AUTOSERVICE [*]"
+echo " " 
+echo "Para información sobre la herramienta usaremos -> '--help' o '-h'"
+echo " "
+#echo "Herramienta que se encarga de gestionar los procesos del sistema."
+#echo " "
+#echo "De esta forma, tendremos un mayor control sobre los procesos e incluso posibles ataques y detección de los mismos."
+#echo " "
+#echo "Está desarrollada para automatizar procesos sencillos de control para los administradores de sistemas de Linux"
+#echo " "
+fi
+
+
+case $1 in
+		("--help" )echo " "
+		echo "autoservice -e -s --> [Escaneará todos los servicios y nos provee información acerca de ellos.]"
+		echo " "
+		echo "autoservice -e -c --> [Escaneará todos las tareas cron. --> [En caso de intrusión, se recomienda autoservice -k -c.]]"
+		echo " "
+		echo "autoservice -k -c --> [Terminará con las tareas cron del usuario actual de forma agresiva.]"
+		echo " "
+		echo "autoservice -ps --> [Veremos TODOS los procesos del sistema según el filtro que nos proporciones y, en caso positivo, podremos acabar con ellos instantáneamente.]"
+		echo " "
+		;;
+		("-h")echo " "
+                echo "autoservice -e -s --> [Escaneará todos los servicios y nos provee información acerca de ellos.]"
+                echo " "
+		echo "autoservice -e -c --> [Escaneará todos las tareas cron. --> [En caso de intrusión, se recomienda autoservice -k -c.]]"
+                echo " "
+                echo "autoservice -k -c --> [Terminará con las tareas cron del usuario actual de forma agresiva.]"
+                echo " "
+                echo "autoservice -ps --> [Veremos TODOS los procesos del sistema según el filtro que nos proporciones y, en caso positivo, podremos acabar con ellos instantáneamente.]"
+                echo " "
+		;;
+esac
+
+
+
+if [[ $1 = "-e" ]] && [[ $2 == "-s" ]] ; then
+Lsof
+
+elif [[ $1 = "-e" ]] && [[ $2 == "-c" ]] ; then
+Crons
+
+elif [[ $1 = "-k" ]] && [[ $2 == "-c" ]] ; then
+KillCrons
+
+elif [[ $1 = "-ps" ]] ; then
+SService
+
+fi
+
+
+#Done#
